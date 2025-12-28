@@ -1,0 +1,82 @@
+# @title Import Library
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+df = pd.read_csv('day.csv')
+df.head()
+
+from google.colab import files
+uploaded = files.upload()
+
+# @title Load Data set
+df = pd.read_csv('day.csv')
+df.head()
+
+df.info()
+
+df.isnull().sum()
+
+df.duplicated().sum()
+
+df['season'].unique()
+df['weathersit'].unique()
+
+# @title Seleksi dan Pembersihan Kolom
+df = df.drop(columns=[
+    'instant',      # ID data
+    'dteday',       # tanggal (tidak dipakai langsung)
+    'casual',       # bagian dari cnt
+    'registered'    # bagian dari cnt
+])
+
+# @title Tampilan data setelah diseleksi
+df.head()
+
+# @title Preprocessing & Labeling
+df['cnt_class'] = pd.qcut(
+    df['cnt'],
+    q=3,
+    labels=['rendah', 'sedang', 'tinggi']
+)
+
+df = df.drop(columns=['cnt'])
+df.head()
+
+# @title Distribusi Kelas Target
+class_counts = df['cnt_class'].value_counts()
+
+plt.figure()
+plt.bar(class_counts.index, class_counts.values)
+plt.xlabel("Kelas Penyewaan")
+plt.ylabel("Jumlah Data")
+plt.title("Distribusi Kelas Target")
+plt.show()
+
+# @title Visualisasi Hubungan Temperature & Target
+plt.figure()
+plt.boxplot(
+    [df[df['cnt_class']=='rendah']['temp'],
+     df[df['cnt_class']=='sedang']['temp'],
+     df[df['cnt_class']=='tinggi']['temp']],
+    labels=['rendah','sedang','tinggi']
+)
+plt.xlabel("Kelas")
+plt.ylabel("Temperature")
+plt.title("Temperature terhadap Kelas Penyewaan")
+plt.show()
+
+corr = df.drop(columns=['cnt_class']).corr()
+
+plt.figure()
+plt.imshow(corr)
+plt.colorbar()
+plt.xticks(range(len(corr.columns)), corr.columns, rotation=90)
+plt.yticks(range(len(corr.columns)), corr.columns)
+plt.title("Korelasi Antar Fitur Numerik")
+plt.show()
